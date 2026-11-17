@@ -11,10 +11,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follo
 - `resources/` folder for app assets: `locales/`, `icons/`, `fonts/`, `sounds/`.
 - Russian and English translations with a language switcher in the toolbar (choice is remembered).
 - SVG icons for toolbar, browser and channel buttons; logo and favicon.
+- Menu bar on the right of the top panel: File (new, import, export JSON/WAV) and Settings (interface language).
 
 ### Changed
 - Frontend modules and tests take magic numbers, strings and helpers from `constants.js` instead of defining them locally.
 - All user-facing text moved from code to `resources/locales/*.json`.
+- File actions and the language switcher moved from toolbar buttons into the menu bar.
+- Top panel layout: logo on the left, transport and project name centered, menu bar on the right.
+
+### Fixed
+- Dev server in Docker missed edits to newly created files (file polling removed, native file events are used).
 
 ## [0.0.1] - 2026-11-17
 

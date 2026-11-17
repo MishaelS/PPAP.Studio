@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { BPM_WHEEL_STEP, MAX_BPM, MIN_BPM, PROJECT_NAME_MAX, STEP_OPTIONS, cx } from '../backend/constants.js';
 import { LANGUAGES, LOCALES, t } from './i18n.js';
-import Icon, { ICONS } from './Icon.jsx';
+import Icon from './Icon.jsx';
+import { ICONS } from './icons.js';
+import MenuBar from './MenuBar.jsx';
 
 function BpmInput({ value, onChange }) {
   const [text, setText] = useState(String(value));
@@ -33,11 +35,45 @@ export default function Transport(props) {
   const { project, playing, busy } = props;
   const fileRef = useRef(null);
 
+  const menus = [
+    {
+      id: 'file',
+      label: t('menu.file'),
+      items: [
+        { id: 'new', label: t('toolbar.new'), icon: 'file-new', onSelect: props.onNew },
+        { separator: true },
+        { id: 'import', label: t('toolbar.import'), icon: 'upload', onSelect: () => fileRef.current.click() },
+        { id: 'export-json', label: t('toolbar.exportJson'), icon: 'download', onSelect: props.onExport },
+        { separator: true },
+        {
+          id: 'export-wav',
+          label: busy ? t('toolbar.rendering') : t('toolbar.exportWav'),
+          icon: 'wave',
+          disabled: busy,
+          onSelect: props.onExportWav,
+        },
+      ],
+    },
+    {
+      id: 'settings',
+      label: t('menu.settings'),
+      items: [
+        { heading: t('language.title'), icon: 'globe' },
+        ...LANGUAGES.map((l) => ({
+          id: `lang-${l}`,
+          label: LOCALES[l]['language.name'],
+          checked: props.lang === l,
+          onSelect: () => props.onLanguage(l),
+        })),
+      ],
+    },
+  ];
+
   return (
     <header className="toolbar">
       <div className="logo"><img src={ICONS.logo} alt="" />PPAP<span>.Studio</span></div>
 
-      <div className="group">
+      <div className="toolbar-center">
         <button className={cx('play', playing && 'active')} onClick={props.onPlay} title={t('toolbar.playStop')}>
           <Icon name={playing ? 'stop' : 'play'} />
         </button>
@@ -51,9 +87,6 @@ export default function Transport(props) {
             {STEP_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </label>
-      </div>
-
-      <div className="group grow">
         <input
           className="project-name"
           value={project.name}
@@ -63,28 +96,18 @@ export default function Transport(props) {
         />
       </div>
 
-      <div className="group">
-        <button onClick={props.onNew}><Icon name="file-new" />{t('toolbar.new')}</button>
-        <button onClick={() => fileRef.current.click()}><Icon name="upload" />{t('toolbar.import')}</button>
-        <button onClick={props.onExport}><Icon name="download" />{t('toolbar.exportJson')}</button>
-        <button className="accent" onClick={props.onExportWav} disabled={busy}>
-          <Icon name="wave" />{busy ? t('toolbar.rendering') : t('toolbar.exportWav')}
-        </button>
-        <select value={props.lang} onChange={(e) => props.onLanguage(e.target.value)} title={t('language.title')}>
-          {LANGUAGES.map((l) => <option key={l} value={l}>{LOCALES[l]['language.name']}</option>)}
-        </select>
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".json,application/json"
-          hidden
-          onChange={(e) => {
-            const file = e.target.files[0];
-            e.target.value = '';
-            if (file) props.onImport(file);
-          }}
-        />
-      </div>
+      <MenuBar menus={menus} />
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".json,application/json"
+        hidden
+        onChange={(e) => {
+          const file = e.target.files[0];
+          e.target.value = '';
+          if (file) props.onImport(file);
+        }}
+      />
     </header>
   );
 }

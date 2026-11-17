@@ -1,10 +1,5 @@
 import { cx } from '../backend/constants.js';
-
-const files = import.meta.glob('../../resources/icons/*.svg', { eager: true, query: '?url', import: 'default' });
-
-export const ICONS = Object.fromEntries(
-  Object.entries(files).map(([path, url]) => [path.split('/').pop().replace('.svg', ''), url]),
-);
+import { ICONS } from './icons.js';
 
 // Monochrome icon tinted with the current text color via CSS mask.
 export default function Icon({ name, className }) {

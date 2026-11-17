@@ -2,6 +2,9 @@
   "language.name": "Русский",
   "language.title": "Язык интерфейса",
 
+  "menu.file": "Файл",
+  "menu.settings": "Настройки",
+
   "toolbar.playStop": "Play / Stop (пробел)",
   "toolbar.bpm": "BPM",
   "toolbar.bpmHint": "BPM (колесо мыши меняет на {step})",

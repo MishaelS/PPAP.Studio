@@ -71,7 +71,7 @@ describe('icons', () => {
   it('ships every icon the UI uses', async () => {
     const { readdirSync } = await import('node:fs');
     const files = readdirSync(new URL('../resources/icons', import.meta.url)).map((f) => f.replace('.svg', ''));
-    for (const name of ['logo', 'play', 'stop', 'plus', 'close', 'clear', 'note', 'folder', 'file-new', 'upload', 'download', 'wave']) {
+    for (const name of ['logo', 'play', 'stop', 'plus', 'close', 'clear', 'note', 'folder', 'file-new', 'upload', 'download', 'wave', 'check', 'globe']) {
       expect(files, `missing resources/icons/${name}.svg`).toContain(name);
     }
   });

@@ -2,6 +2,9 @@
   "language.name": "English",
   "language.title": "Interface language",
 
+  "menu.file": "File",
+  "menu.settings": "Settings",
+
   "toolbar.playStop": "Play / Stop (Space)",
   "toolbar.bpm": "BPM",
   "toolbar.bpmHint": "BPM (mouse wheel changes by {step})",
