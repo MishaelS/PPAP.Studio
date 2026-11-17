@@ -1,0 +1,159 @@
+# Secrets and keys (never commit)
+.env
+.env.*
+!.env.example
+*.env
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+*.secret
+secrets/
+.secrets/
+credentials*.json
+service-account*.json
+*-credentials.json
+.npmrc
+.yarnrc
+.netrc
+.htpasswd
+
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+bower_components/
+
+# Build output and caches
+dist/
+build/
+out/
+.vite/
+.turbo/
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+# Rust / WASM DSP builds
+target/
+# Frontend bundles
+apps/*/dist/
+packages/*/dist/
+
+# Tests and reports
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/
+stats.html
+bundle-report*.html
+
+# Logs
+*.log
+/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+docs/research/*.log
+
+# Local data: databases, object storage, user uploads
+/data/
+/.data/
+/pgdata/
+/postgres-data/
+/minio-data/
+/redis-data/
+/storage/
+/uploads/
+/backups/
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.gz
+docker-compose.override.yml
+
+# Audio (samples and tracks live in object storage)
+/exports/
+/renders/
+/recordings/
+/samples-raw/
+*.wav
+*.mp3
+*.flac
+*.aiff
+*.aif
+*.ogg
+*.opus
+*.m4a
+*.flp
+*.als
+# Exception: small test fixtures
+!**/test/fixtures/**
+!**/__fixtures__/**
+
+# Temporary files
+/tmp/
+/.tmp/
+/temp/
+/scratch/
+*.tmp
+*.bak
+*.orig
+*.swp
+*.swo
+*~
+*.local.*
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editors and IDEs
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+.history/
+
+# AI tools: local settings and sessions
+.claude/settings.local.json
+.claude/*.local.*
+CLAUDE.local.md
+.codex/
+.cursor/
+.aider*
+.continue/
+
+
+# Deploy
+.vercel/
+.netlify/
+.wrangler/
+
+# Internal docs and AI guides (local only)
+docs/
+AGENTS.md
+CLAUDE.md
+.claude/
