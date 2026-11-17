@@ -33,6 +33,17 @@ button {
   cursor: pointer;
 }
 button:hover { filter: brightness(1.15); }
+button { display: inline-flex; align-items: center; gap: 6px; }
+
+.ico {
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
 button:disabled { opacity: 0.5; cursor: default; }
 button.accent { background: var(--accent); color: #1b1b1b; font-weight: 600; }
 
@@ -54,7 +65,8 @@ input, select {
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
-.logo { font-weight: 700; font-size: 16px; color: var(--accent); }
+.logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; color: var(--accent); }
+.logo img { width: 22px; height: 22px; }
 .logo span { color: var(--text); font-weight: 400; }
 .group { display: flex; align-items: center; gap: 8px; }
 .group.grow { flex: 1; min-width: 120px; }
@@ -62,7 +74,7 @@ input, select {
 .bpm { width: 64px; color: var(--green); font-family: monospace; font-size: 15px; }
 .project-name { width: 100%; max-width: 280px; }
 
-.play { width: 36px; font-size: 14px; }
+.play { width: 36px; justify-content: center; }
 .play.active { background: var(--green); color: #1b1b1b; }
 
 .message {
@@ -95,8 +107,11 @@ input, select {
   border-right: 1px solid var(--border);
   overflow-y: auto;
 }
-.browser-folder { padding: 6px 10px 2px; color: var(--accent); }
+.browser-folder { display: flex; align-items: center; gap: 6px; padding: 6px 10px 2px; color: var(--accent); }
 .browser-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 3px 10px 3px 24px;
   cursor: grab;
   user-select: none;
@@ -136,6 +151,7 @@ input, select {
 .knob { width: 44px; padding: 0; accent-color: var(--accent); }
 
 .channel-name {
+  display: block;
   width: 110px;
   text-align: left;
   background: #55616a;

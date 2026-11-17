@@ -1,10 +1,11 @@
 import { isAudible, stepDuration } from './project.js';
 import { SAMPLES, renderSample } from './samples.js';
 import { encodeWav } from './wav.js';
-
-const LOOKAHEAD = 0.1;
-const TICK_MS = 25;
-const EXPORT_TAIL = 1.5;
+import {
+  EXPORT_LOOPS, EXPORT_TAIL, LIMITER_RATIO, LIMITER_THRESHOLD_DB, MASTER_GAIN, NO_STEP,
+  PREVIEW_VOLUME, SCHEDULE_LOOKAHEAD, SCHEDULER_TICK_MS, START_DELAY,
+} from '../backend/constants.js';
+import { t } from './i18n.js';
 
 // Steps whose start time falls before `until`, continuing from the given position.
 export function scheduleWindow({ nextTime, step, until, bpm, steps }) {
@@ -26,10 +27,10 @@ export function channelsForStep(project, step) {
 
 function createOutput(ctx) {
   const master = ctx.createGain();
-  master.gain.value = 0.9;
+  master.gain.value = MASTER_GAIN;
   const limiter = ctx.createDynamicsCompressor();
-  limiter.threshold.value = -3;
-  limiter.ratio.value = 12;
+  limiter.threshold.value = LIMITER_THRESHOLD_DB;
+  limiter.ratio.value = LIMITER_RATIO;
   master.connect(limiter).connect(ctx.destination);
   return master;
 }
@@ -54,7 +55,7 @@ export class AudioEngine {
     this.playing = false;
     this.timer = null;
     this.queue = [];
-    this.lastStep = -1;
+    this.lastStep = NO_STEP;
     this.ready = null;
   }
 
@@ -63,7 +64,7 @@ export class AudioEngine {
     if (!this.ready) {
       this.ready = (async () => {
         const Ctx = globalThis.AudioContext || globalThis.webkitAudioContext;
-        if (!Ctx) throw new Error('Браузер не поддерживает Web Audio API.');
+        if (!Ctx) throw new Error(t('error.noWebAudio'));
         this.ctx = new Ctx();
         this.out = createOutput(this.ctx);
         await Promise.all(
@@ -82,7 +83,7 @@ export class AudioEngine {
   async preview(sampleId) {
     await this.init();
     const buffer = this.buffers.get(sampleId);
-    if (buffer) playHit(this.ctx, this.out, buffer, this.ctx.currentTime, { volume: 0.9, pan: 0 });
+    if (buffer) playHit(this.ctx, this.out, buffer, this.ctx.currentTime, { volume: PREVIEW_VOLUME, pan: 0 });
   }
 
   async start() {
@@ -90,10 +91,10 @@ export class AudioEngine {
     if (this.playing) return;
     this.playing = true;
     this.step = 0;
-    this.nextTime = this.ctx.currentTime + 0.05;
+    this.nextTime = this.ctx.currentTime + START_DELAY;
     this.queue = [];
     this.tick();
-    this.timer = setInterval(() => this.tick(), TICK_MS);
+    this.timer = setInterval(() => this.tick(), SCHEDULER_TICK_MS);
   }
 
   stop() {
@@ -101,14 +102,14 @@ export class AudioEngine {
     clearInterval(this.timer);
     this.timer = null;
     this.queue = [];
-    this.lastStep = -1;
+    this.lastStep = NO_STEP;
   }
 
   tick() {
     const p = this.project;
     if (!p) return;
     const win = scheduleWindow({
-      nextTime: this.nextTime, step: this.step, until: this.ctx.currentTime + LOOKAHEAD, bpm: p.bpm, steps: p.steps,
+      nextTime: this.nextTime, step: this.step, until: this.ctx.currentTime + SCHEDULE_LOOKAHEAD, bpm: p.bpm, steps: p.steps,
     });
     for (const hit of win.hits) {
       for (const c of channelsForStep(p, hit.step)) {
@@ -121,15 +122,15 @@ export class AudioEngine {
     this.step = win.step;
   }
 
-  // Step currently audible, for the playhead; -1 when stopped.
+  // Step currently audible, for the playhead; NO_STEP when stopped.
   currentStep() {
-    if (!this.playing) return -1;
+    if (!this.playing) return NO_STEP;
     const now = this.ctx.currentTime;
     while (this.queue.length && this.queue[0].time <= now) this.lastStep = this.queue.shift().step;
     return this.lastStep;
   }
 
-  async exportWav(project, loops = 1) {
+  async exportWav(project, loops = EXPORT_LOOPS) {
     await this.init();
     const sampleRate = this.ctx.sampleRate;
     const dur = stepDuration(project.bpm);

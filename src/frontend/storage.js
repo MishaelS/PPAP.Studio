@@ -1,6 +1,8 @@
 import { createProject, parseProject } from './project.js';
-
-const KEY = 'ppap.project';
+import {
+  MAX_IMPORT_BYTES, OBJECT_URL_TTL_MS, PROJECT_FILE_EXT, STORAGE_KEY, safeFileName,
+} from '../backend/constants.js';
+import { t } from './i18n.js';
 
 // The only place that knows where projects live; swap this file to move to a server.
 
@@ -14,23 +16,23 @@ function getStore() {
 
 export function loadProject() {
   const store = getStore();
-  const raw = store?.getItem(KEY);
+  const raw = store?.getItem(STORAGE_KEY);
   if (!raw) return { project: createProject(), error: null };
   try {
     return { project: parseProject(raw), error: null };
   } catch (e) {
-    return { project: createProject(), error: `Сохранённый проект повреждён и был сброшен: ${e.message}` };
+    return { project: createProject(), error: t('error.savedProjectBroken', { reason: e.message }) };
   }
 }
 
 export function saveProject(project) {
   const store = getStore();
-  if (!store) return 'Браузер не даёт сохранять данные (приватный режим?). Используйте экспорт JSON.';
+  if (!store) return t('error.storageUnavailable');
   try {
-    store.setItem(KEY, JSON.stringify(project));
+    store.setItem(STORAGE_KEY, JSON.stringify(project));
     return null;
   } catch {
-    return 'Не удалось сохранить проект: хранилище браузера переполнено.';
+    return t('error.storageFull');
   }
 }
 
@@ -40,19 +42,15 @@ export function downloadBlob(blob, filename) {
   a.href = url;
   a.download = filename;
   a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-export function safeFileName(name) {
-  return String(name).replace(/[^\p{L}\p{N}_ -]+/gu, '').trim() || 'project';
+  setTimeout(() => URL.revokeObjectURL(url), OBJECT_URL_TTL_MS);
 }
 
 export function exportProject(project) {
   const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
-  downloadBlob(blob, `${safeFileName(project.name)}.ppap.json`);
+  downloadBlob(blob, `${safeFileName(project.name)}${PROJECT_FILE_EXT}`);
 }
 
 export async function importProject(file) {
-  if (file.size > 1024 * 1024) throw new Error('Файл слишком большой для проекта (больше 1 МБ).');
+  if (file.size > MAX_IMPORT_BYTES) throw new Error(t('error.importTooLarge', { mb: MAX_IMPORT_BYTES / 1024 / 1024 }));
   return parseProject(await file.text());
 }

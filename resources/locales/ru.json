@@ -1,0 +1,51 @@
+{
+  "language.name": "Русский",
+  "language.title": "Язык интерфейса",
+
+  "toolbar.playStop": "Play / Stop (пробел)",
+  "toolbar.bpm": "BPM",
+  "toolbar.bpmHint": "BPM (колесо мыши меняет на {step})",
+  "toolbar.steps": "Шаги",
+  "toolbar.projectName": "Название проекта",
+  "toolbar.new": "Новый",
+  "toolbar.import": "Импорт",
+  "toolbar.exportJson": "Экспорт JSON",
+  "toolbar.exportWav": "Экспорт WAV",
+  "toolbar.rendering": "Рендер…",
+
+  "browser.title": "Браузер",
+  "browser.itemHint": "Клик — прослушать, перетащите в Channel Rack",
+
+  "rack.title": "Channel Rack",
+  "rack.addChannel": "Канал",
+  "rack.dropHint": "или перетащите сэмпл сюда",
+  "rack.nameHint": "Клик — прослушать, двойной клик — переименовать",
+  "rack.enable": "Вкл / выкл канал",
+  "rack.solo": "Solo",
+  "rack.pan": "Панорама: {value} (двойной клик — центр)",
+  "rack.volume": "Громкость: {value}% (двойной клик — {default}%)",
+  "rack.sample": "Сэмпл канала",
+  "rack.step": "Шаг {n}",
+  "rack.clear": "Очистить паттерн",
+  "rack.remove": "Удалить канал",
+
+  "common.close": "Закрыть",
+
+  "error.noWebAudio": "Браузер не поддерживает Web Audio API.",
+  "error.storageUnavailable": "Браузер не даёт сохранять данные (приватный режим?). Используйте экспорт JSON.",
+  "error.storageFull": "Не удалось сохранить проект: хранилище браузера переполнено.",
+  "error.savedProjectBroken": "Сохранённый проект повреждён и был сброшен: {reason}",
+  "error.importTooLarge": "Файл слишком большой для проекта (больше {mb} МБ).",
+  "error.importFailed": "Не удалось импортировать проект: {reason}",
+  "error.wavFailed": "Не удалось отрендерить WAV: {reason}",
+  "error.invalidJson": "Файл не является корректным JSON.",
+  "error.notAnObject": "Проект должен быть JSON-объектом.",
+  "error.invalidSteps": "Поле \"steps\" должно быть одним из: {options}.",
+  "error.invalidBpm": "Поле \"bpm\" должно быть числом.",
+  "error.invalidChannels": "Поле \"channels\" должно быть массивом.",
+  "error.channelNotObject": "Канал #{n}: должен быть объектом.",
+  "error.channelNoSample": "Канал #{n}: нет поля \"sampleId\".",
+  "error.channelBadPattern": "Канал #{n}: поле \"pattern\" должно быть массивом.",
+
+  "confirm.newProject": "Создать новый проект? Текущий будет заменён."
+}

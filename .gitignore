@@ -99,7 +99,8 @@ docker-compose.override.yml
 *.m4a
 *.flp
 *.als
-# Exception: small test fixtures
+# Exception: app sounds and small test fixtures
+!resources/sounds/**
 !**/test/fixtures/**
 !**/__fixtures__/**
 

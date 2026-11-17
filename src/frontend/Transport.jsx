@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { MAX_BPM, MIN_BPM, STEP_OPTIONS } from './project.js';
+import { BPM_WHEEL_STEP, MAX_BPM, MIN_BPM, PROJECT_NAME_MAX, STEP_OPTIONS, cx } from '../backend/constants.js';
+import { LANGUAGES, LOCALES, t } from './i18n.js';
+import Icon, { ICONS } from './Icon.jsx';
 
 function BpmInput({ value, onChange }) {
   const [text, setText] = useState(String(value));
@@ -20,9 +22,9 @@ function BpmInput({ value, onChange }) {
       onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
       onWheel={(e) => {
         e.target.blur();
-        onChange(value + (e.deltaY < 0 ? 1 : -1));
+        onChange(value + (e.deltaY < 0 ? BPM_WHEEL_STEP : -BPM_WHEEL_STEP));
       }}
-      title="BPM (колесо мыши меняет на 1)"
+      title={t('toolbar.bpmHint', { step: BPM_WHEEL_STEP })}
     />
   );
 }
@@ -33,18 +35,18 @@ export default function Transport(props) {
 
   return (
     <header className="toolbar">
-      <div className="logo">PPAP<span>.Studio</span></div>
+      <div className="logo"><img src={ICONS.logo} alt="" />PPAP<span>.Studio</span></div>
 
       <div className="group">
-        <button className={`play ${playing ? 'active' : ''}`} onClick={props.onPlay} title="Play / Stop (пробел)">
-          {playing ? '■' : '▶'}
+        <button className={cx('play', playing && 'active')} onClick={props.onPlay} title={t('toolbar.playStop')}>
+          <Icon name={playing ? 'stop' : 'play'} />
         </button>
         <label className="field">
-          <span>BPM</span>
+          <span>{t('toolbar.bpm')}</span>
           <BpmInput value={project.bpm} onChange={props.onBpm} />
         </label>
         <label className="field">
-          <span>Шаги</span>
+          <span>{t('toolbar.steps')}</span>
           <select value={project.steps} onChange={(e) => props.onSteps(Number(e.target.value))}>
             {STEP_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -56,18 +58,21 @@ export default function Transport(props) {
           className="project-name"
           value={project.name}
           onChange={(e) => props.onName(e.target.value)}
-          maxLength={60}
-          title="Название проекта"
+          maxLength={PROJECT_NAME_MAX}
+          title={t('toolbar.projectName')}
         />
       </div>
 
       <div className="group">
-        <button onClick={props.onNew}>Новый</button>
-        <button onClick={() => fileRef.current.click()}>Импорт</button>
-        <button onClick={props.onExport}>Экспорт JSON</button>
+        <button onClick={props.onNew}><Icon name="file-new" />{t('toolbar.new')}</button>
+        <button onClick={() => fileRef.current.click()}><Icon name="upload" />{t('toolbar.import')}</button>
+        <button onClick={props.onExport}><Icon name="download" />{t('toolbar.exportJson')}</button>
         <button className="accent" onClick={props.onExportWav} disabled={busy}>
-          {busy ? 'Рендер…' : 'Экспорт WAV'}
+          <Icon name="wave" />{busy ? t('toolbar.rendering') : t('toolbar.exportWav')}
         </button>
+        <select value={props.lang} onChange={(e) => props.onLanguage(e.target.value)} title={t('language.title')}>
+          {LANGUAGES.map((l) => <option key={l} value={l}>{LOCALES[l]['language.name']}</option>)}
+        </select>
         <input
           ref={fileRef}
           type="file"

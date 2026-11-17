@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { SAMPLES, findSample } from './samples.js';
-import { DRAG_TYPE } from './SampleBrowser.jsx';
+import {
+  CHANNEL_NAME_MAX, DEFAULT_PAN, DEFAULT_SAMPLE, DEFAULT_VOLUME, DRAG_SAMPLE_TYPE, KNOB_STEP, PAN_RANGE,
+  STEPS_PER_GROUP, VOLUME_RANGE, cx, percent,
+} from '../backend/constants.js';
+import { t } from './i18n.js';
+import Icon from './Icon.jsx';
 
 function droppedSample(e) {
-  const id = e.dataTransfer.getData(DRAG_TYPE);
+  const id = e.dataTransfer.getData(DRAG_SAMPLE_TYPE);
   return findSample(id);
 }
 
 function allowDrop(e) {
-  if (e.dataTransfer.types.includes(DRAG_TYPE)) {
+  if (e.dataTransfer.types.includes(DRAG_SAMPLE_TYPE)) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
   }
@@ -22,7 +27,7 @@ function ChannelName({ channel, onRename, onPreview }) {
         className="channel-name editing"
         defaultValue={channel.name}
         autoFocus
-        maxLength={24}
+        maxLength={CHANNEL_NAME_MAX}
         onBlur={(e) => {
           onRename(e.target.value);
           setEditing(false);
@@ -39,7 +44,7 @@ function ChannelName({ channel, onRename, onPreview }) {
       className="channel-name"
       onClick={onPreview}
       onDoubleClick={() => setEditing(true)}
-      title="Клик — прослушать, двойной клик — переименовать"
+      title={t('rack.nameHint')}
     >
       {channel.name}
     </button>
@@ -53,7 +58,7 @@ function ChannelRow({ channel, steps, step, anySolo, handlers }) {
 
   return (
     <div
-      className={`channel ${over ? 'drop' : ''} ${silent ? 'silent' : ''}`}
+      className={cx('channel', over && 'drop', silent && 'silent')}
       onDragOver={(e) => { allowDrop(e); setOver(true); }}
       onDragLeave={() => setOver(false)}
       onDrop={(e) => {
@@ -66,38 +71,38 @@ function ChannelRow({ channel, steps, step, anySolo, handlers }) {
       }}
     >
       <button
-        className={`led ${channel.mute ? '' : 'on'}`}
+        className={cx('led', !channel.mute && 'on')}
         onClick={() => onChange(channel.id, { mute: !channel.mute })}
-        title="Вкл / выкл канал"
+        title={t('rack.enable')}
       />
       <button
-        className={`solo ${channel.solo ? 'on' : ''}`}
+        className={cx('solo', channel.solo && 'on')}
         onClick={() => onChange(channel.id, { solo: !channel.solo })}
-        title="Solo"
+        title={t('rack.solo')}
       >
         S
       </button>
       <input
         className="knob pan"
         type="range"
-        min={-1}
-        max={1}
-        step={0.01}
+        min={PAN_RANGE[0]}
+        max={PAN_RANGE[1]}
+        step={KNOB_STEP}
         value={channel.pan}
         onChange={(e) => onChange(channel.id, { pan: e.target.value })}
-        onDoubleClick={() => onChange(channel.id, { pan: 0 })}
-        title={`Панорама: ${Math.round(channel.pan * 100)} (двойной клик — центр)`}
+        onDoubleClick={() => onChange(channel.id, { pan: DEFAULT_PAN })}
+        title={t('rack.pan', { value: percent(channel.pan) })}
       />
       <input
         className="knob vol"
         type="range"
-        min={0}
-        max={1}
-        step={0.01}
+        min={VOLUME_RANGE[0]}
+        max={VOLUME_RANGE[1]}
+        step={KNOB_STEP}
         value={channel.volume}
         onChange={(e) => onChange(channel.id, { volume: e.target.value })}
-        onDoubleClick={() => onChange(channel.id, { volume: 0.8 })}
-        title={`Громкость: ${Math.round(channel.volume * 100)}% (двойной клик — 80%)`}
+        onDoubleClick={() => onChange(channel.id, { volume: DEFAULT_VOLUME })}
+        title={t('rack.volume', { value: percent(channel.volume), default: percent(DEFAULT_VOLUME) })}
       />
       <ChannelName
         channel={channel}
@@ -108,7 +113,7 @@ function ChannelRow({ channel, steps, step, anySolo, handlers }) {
         className="sample-select"
         value={channel.sampleId}
         onChange={(e) => onChange(channel.id, { sampleId: e.target.value })}
-        title="Сэмпл канала"
+        title={t('rack.sample')}
       >
         {!findSample(channel.sampleId) && <option value={channel.sampleId}>? {channel.sampleId}</option>}
         {SAMPLES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -118,20 +123,20 @@ function ChannelRow({ channel, steps, step, anySolo, handlers }) {
         {channel.pattern.map((on, i) => (
           <button
             key={i}
-            className={[
+            className={cx(
               'step',
-              Math.floor(i / 4) % 2 ? 'alt' : '',
-              on ? 'on' : '',
-              i === step ? 'play' : '',
-            ].join(' ')}
+              Math.floor(i / STEPS_PER_GROUP) % 2 && 'alt',
+              on && 'on',
+              i === step && 'play',
+            )}
             onClick={() => onToggle(channel.id, i)}
-            aria-label={`Шаг ${i + 1}`}
+            aria-label={t('rack.step', { n: i + 1 })}
           />
         ))}
       </div>
 
-      <button className="icon" onClick={() => onClear(channel.id)} title="Очистить паттерн">⌫</button>
-      <button className="icon" onClick={() => onRemove(channel.id)} title="Удалить канал">✕</button>
+      <button className="icon" onClick={() => onClear(channel.id)} title={t('rack.clear')}><Icon name="clear" /></button>
+      <button className="icon" onClick={() => onRemove(channel.id)} title={t('rack.remove')}><Icon name="close" /></button>
     </div>
   );
 }
@@ -142,13 +147,13 @@ export default function ChannelRack({ project, step, onAdd, ...handlers }) {
 
   return (
     <section className="rack">
-      <div className="panel-title">Channel Rack</div>
+      <div className="panel-title">{t('rack.title')}</div>
       <div className="rack-body">
         {project.channels.map((c) => (
           <ChannelRow key={c.id} channel={c} steps={project.steps} step={step} anySolo={anySolo} handlers={handlers} />
         ))}
         <div
-          className={`add-channel ${over ? 'drop' : ''}`}
+          className={cx('add-channel', over && 'drop')}
           onDragOver={(e) => { allowDrop(e); setOver(true); }}
           onDragLeave={() => setOver(false)}
           onDrop={(e) => {
@@ -157,8 +162,8 @@ export default function ChannelRack({ project, step, onAdd, ...handlers }) {
             if (s) { e.preventDefault(); onAdd(s.id, s.name); }
           }}
         >
-          <button onClick={() => onAdd('kick', 'Kick')}>+ Канал</button>
-          <span>или перетащите сэмпл сюда</span>
+          <button onClick={() => onAdd(DEFAULT_SAMPLE.id, DEFAULT_SAMPLE.name)}><Icon name="plus" />{t('rack.addChannel')}</button>
+          <span>{t('rack.dropHint')}</span>
         </div>
       </div>
     </section>

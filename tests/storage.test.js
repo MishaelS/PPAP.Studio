@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { importProject, loadProject, safeFileName, saveProject } from '../src/frontend/storage.js';
+import { importProject, loadProject, saveProject } from '../src/frontend/storage.js';
+import { safeFileName } from '../src/backend/constants.js';
 import { createProject } from '../src/frontend/project.js';
 
 function fakeStorage(initial = {}) {

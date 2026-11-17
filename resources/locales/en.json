@@ -1,0 +1,51 @@
+{
+  "language.name": "English",
+  "language.title": "Interface language",
+
+  "toolbar.playStop": "Play / Stop (Space)",
+  "toolbar.bpm": "BPM",
+  "toolbar.bpmHint": "BPM (mouse wheel changes by {step})",
+  "toolbar.steps": "Steps",
+  "toolbar.projectName": "Project name",
+  "toolbar.new": "New",
+  "toolbar.import": "Import",
+  "toolbar.exportJson": "Export JSON",
+  "toolbar.exportWav": "Export WAV",
+  "toolbar.rendering": "Rendering…",
+
+  "browser.title": "Browser",
+  "browser.itemHint": "Click to preview, drag into the Channel Rack",
+
+  "rack.title": "Channel Rack",
+  "rack.addChannel": "Channel",
+  "rack.dropHint": "or drop a sample here",
+  "rack.nameHint": "Click to preview, double-click to rename",
+  "rack.enable": "Channel on / off",
+  "rack.solo": "Solo",
+  "rack.pan": "Pan: {value} (double-click to center)",
+  "rack.volume": "Volume: {value}% (double-click for {default}%)",
+  "rack.sample": "Channel sample",
+  "rack.step": "Step {n}",
+  "rack.clear": "Clear pattern",
+  "rack.remove": "Delete channel",
+
+  "common.close": "Close",
+
+  "error.noWebAudio": "This browser does not support the Web Audio API.",
+  "error.storageUnavailable": "The browser does not allow saving data (private mode?). Use JSON export.",
+  "error.storageFull": "Could not save the project: browser storage is full.",
+  "error.savedProjectBroken": "The saved project was corrupted and has been reset: {reason}",
+  "error.importTooLarge": "The file is too large for a project (over {mb} MB).",
+  "error.importFailed": "Could not import the project: {reason}",
+  "error.wavFailed": "Could not render WAV: {reason}",
+  "error.invalidJson": "The file is not valid JSON.",
+  "error.notAnObject": "A project must be a JSON object.",
+  "error.invalidSteps": "Field \"steps\" must be one of: {options}.",
+  "error.invalidBpm": "Field \"bpm\" must be a number.",
+  "error.invalidChannels": "Field \"channels\" must be an array.",
+  "error.channelNotObject": "Channel #{n}: must be an object.",
+  "error.channelNoSample": "Channel #{n}: missing \"sampleId\".",
+  "error.channelBadPattern": "Channel #{n}: \"pattern\" must be an array.",
+
+  "confirm.newProject": "Create a new project? The current one will be replaced."
+}

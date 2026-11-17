@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as P from '../src/frontend/project.js';
+import { MAX_BPM, MIN_BPM } from '../src/backend/constants.js';
 
 describe('project model', () => {
   it('creates a default project with matching pattern lengths', () => {
@@ -41,8 +42,8 @@ describe('project model', () => {
     p = P.setChannel(p, id, { volume: '5', pan: -3 });
     expect(p.channels[0].volume).toBe(1);
     expect(p.channels[0].pan).toBe(-1);
-    expect(P.setBpm(p, 1000).bpm).toBe(P.MAX_BPM);
-    expect(P.setBpm(p, 1).bpm).toBe(P.MIN_BPM);
+    expect(P.setBpm(p, 1000).bpm).toBe(MAX_BPM);
+    expect(P.setBpm(p, 1).bpm).toBe(MIN_BPM);
     expect(P.setBpm(p, 'abc').bpm).toBe(p.bpm);
   });
 
@@ -83,7 +84,7 @@ describe('parseProject', () => {
       steps: 16,
       channels: [{ sampleId: 'kick', pattern: [1, true, 0], volume: 'x' }],
     });
-    expect(p.bpm).toBe(P.MAX_BPM);
+    expect(p.bpm).toBe(MAX_BPM);
     expect(p.name).toBe('Untitled');
     expect(p.channels[0].pattern).toHaveLength(16);
     expect(p.channels[0].pattern.slice(0, 3)).toEqual([1, 1, 0]);

@@ -1,7 +1,8 @@
-export const MIN_BPM = 40;
-export const MAX_BPM = 300;
-export const STEP_OPTIONS = [16, 32];
-export const STEPS_PER_BEAT = 4;
+import {
+  DEFAULT_BPM, DEFAULT_CHANNEL_NAME, DEFAULT_PAN, DEFAULT_PROJECT_NAME, DEFAULT_STEPS, DEFAULT_VOLUME,
+  MAX_BPM, MIN_BPM, PAN_RANGE, STEP_OPTIONS, STEPS_PER_BEAT, VOLUME_RANGE, clamp, makeId,
+} from '../backend/constants.js';
+import { t } from './i18n.js';
 
 export class ProjectError extends Error {
   constructor(message) {
@@ -10,21 +11,13 @@ export class ProjectError extends Error {
   }
 }
 
-export function makeId(prefix) {
-  return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
-}
-
-export function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
-export function createChannel(sampleId, name, steps = 16) {
+export function createChannel(sampleId, name, steps = DEFAULT_STEPS) {
   return {
     id: makeId('c'),
     name: name || sampleId,
     sampleId,
-    volume: 0.8,
-    pan: 0,
+    volume: DEFAULT_VOLUME,
+    pan: DEFAULT_PAN,
     mute: false,
     solo: false,
     pattern: new Array(steps).fill(0),
@@ -42,10 +35,10 @@ export function createProject() {
   hat.pattern  = [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0];
   return {
     id: makeId('p'),
-    name: 'Untitled',
+    name: DEFAULT_PROJECT_NAME,
     battleId: null,
-    bpm: 140,
-    steps: 16,
+    bpm: DEFAULT_BPM,
+    steps: DEFAULT_STEPS,
     channels: [kick, clap, hat, snare],
   };
 }
@@ -76,9 +69,9 @@ export function toggleStep(project, channelId, step) {
 
 export function setChannel(project, channelId, fields) {
   const clean = { ...fields };
-  if ('volume' in clean) clean.volume = clamp(Number(clean.volume), 0, 1);
-  if ('pan' in clean) clean.pan = clamp(Number(clean.pan), -1, 1);
-  if ('name' in clean) clean.name = String(clean.name).trim() || 'Channel';
+  if ('volume' in clean) clean.volume = clamp(Number(clean.volume), ...VOLUME_RANGE);
+  if ('pan' in clean) clean.pan = clamp(Number(clean.pan), ...PAN_RANGE);
+  if ('name' in clean) clean.name = String(clean.name).trim() || DEFAULT_CHANNEL_NAME;
   return updateChannel(project, channelId, () => clean);
 }
 
@@ -128,25 +121,25 @@ export function parseProject(input) {
     try {
       data = JSON.parse(input);
     } catch {
-      fail('Файл не является корректным JSON.');
+      fail(t('error.invalidJson'));
     }
   }
-  if (!data || typeof data !== 'object' || Array.isArray(data)) fail('Проект должен быть JSON-объектом.');
-  if (!STEP_OPTIONS.includes(data.steps)) fail(`Поле "steps" должно быть одним из: ${STEP_OPTIONS.join(', ')}.`);
-  if (typeof data.bpm !== 'number' || !Number.isFinite(data.bpm)) fail('Поле "bpm" должно быть числом.');
-  if (!Array.isArray(data.channels)) fail('Поле "channels" должно быть массивом.');
+  if (!data || typeof data !== 'object' || Array.isArray(data)) fail(t('error.notAnObject'));
+  if (!STEP_OPTIONS.includes(data.steps)) fail(t('error.invalidSteps', { options: STEP_OPTIONS.join(', ') }));
+  if (typeof data.bpm !== 'number' || !Number.isFinite(data.bpm)) fail(t('error.invalidBpm'));
+  if (!Array.isArray(data.channels)) fail(t('error.invalidChannels'));
 
   const channels = data.channels.map((c, i) => {
-    const where = `Канал #${i + 1}`;
-    if (!c || typeof c !== 'object') fail(`${where}: должен быть объектом.`);
-    if (typeof c.sampleId !== 'string' || !c.sampleId) fail(`${where}: нет поля "sampleId".`);
-    if (!Array.isArray(c.pattern)) fail(`${where}: поле "pattern" должно быть массивом.`);
+    const n = i + 1;
+    if (!c || typeof c !== 'object') fail(t('error.channelNotObject', { n }));
+    if (typeof c.sampleId !== 'string' || !c.sampleId) fail(t('error.channelNoSample', { n }));
+    if (!Array.isArray(c.pattern)) fail(t('error.channelBadPattern', { n }));
     return {
       id: typeof c.id === 'string' && c.id ? c.id : makeId('c'),
       name: typeof c.name === 'string' && c.name.trim() ? c.name : c.sampleId,
       sampleId: c.sampleId,
-      volume: clamp(Number(c.volume ?? 0.8) || 0, 0, 1),
-      pan: clamp(Number(c.pan ?? 0) || 0, -1, 1),
+      volume: clamp(Number(c.volume ?? DEFAULT_VOLUME) || 0, ...VOLUME_RANGE),
+      pan: clamp(Number(c.pan ?? DEFAULT_PAN) || 0, ...PAN_RANGE),
       mute: Boolean(c.mute),
       solo: Boolean(c.solo),
       pattern: resizePattern(c.pattern.map((v) => (v ? 1 : 0)), data.steps),
@@ -155,7 +148,7 @@ export function parseProject(input) {
 
   return {
     id: typeof data.id === 'string' && data.id ? data.id : makeId('p'),
-    name: typeof data.name === 'string' && data.name.trim() ? data.name : 'Untitled',
+    name: typeof data.name === 'string' && data.name.trim() ? data.name : DEFAULT_PROJECT_NAME,
     battleId: typeof data.battleId === 'string' ? data.battleId : null,
     bpm: clamp(Math.round(data.bpm), MIN_BPM, MAX_BPM),
     steps: data.steps,

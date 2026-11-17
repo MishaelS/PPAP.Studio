@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { AudioEngine } from './audio.js';
 import * as P from './project.js';
-import { downloadBlob, exportProject, importProject, loadProject, safeFileName, saveProject } from './storage.js';
+import { downloadBlob, exportProject, importProject, loadProject, saveProject } from './storage.js';
+import {
+  AUTOSAVE_DELAY_MS, KEY_PLAY, NO_STEP, WAV_FILE_EXT, isTypingTarget, safeFileName,
+} from '../backend/constants.js';
+import { getLanguage, setLanguage, t } from './i18n.js';
+import Icon from './Icon.jsx';
 import Transport from './Transport.jsx';
 import ChannelRack from './ChannelRack.jsx';
 import SampleBrowser from './SampleBrowser.jsx';
@@ -14,20 +19,21 @@ export default function App() {
 
   const [project, setProject] = useState(initial.project);
   const [playing, setPlaying] = useState(false);
-  const [step, setStep] = useState(-1);
+  const [step, setStep] = useState(NO_STEP);
   const [message, setMessage] = useState(initial.error);
   const [busy, setBusy] = useState(false);
+  const [lang, setLang] = useState(getLanguage());
 
   const update = (fn) => setProject((p) => fn(p));
   const fail = (e) => setMessage(e?.message || String(e));
 
   useEffect(() => {
     engine.current.setProject(project);
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       const error = saveProject(project);
       if (error) setMessage(error);
-    }, 300);
-    return () => clearTimeout(t);
+    }, AUTOSAVE_DELAY_MS);
+    return () => clearTimeout(timer);
   }, [project]);
 
   useEffect(() => {
@@ -45,7 +51,7 @@ export default function App() {
     if (playing) {
       engine.current.stop();
       setPlaying(false);
-      setStep(-1);
+      setStep(NO_STEP);
       return;
     }
     try {
@@ -61,9 +67,7 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.code !== 'Space') return;
-      const tag = e.target.tagName;
-      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if (e.code !== KEY_PLAY || isTypingTarget(e.target)) return;
       e.preventDefault();
       playRef.current();
     };
@@ -81,24 +85,28 @@ export default function App() {
       setProject(p);
       setMessage(null);
     } catch (e) {
-      fail(new Error(`Не удалось импортировать проект: ${e.message}`));
+      fail(new Error(t('error.importFailed', { reason: e.message })));
     }
   };
 
   const onExportWav = async () => {
     setBusy(true);
     try {
-      const blob = await engine.current.exportWav(project, 2);
-      downloadBlob(blob, `${safeFileName(project.name)}.wav`);
+      const blob = await engine.current.exportWav(project);
+      downloadBlob(blob, `${safeFileName(project.name)}${WAV_FILE_EXT}`);
     } catch (e) {
-      fail(new Error(`Не удалось отрендерить WAV: ${e.message}`));
+      fail(new Error(t('error.wavFailed', { reason: e.message })));
     } finally {
       setBusy(false);
     }
   };
 
   const onNew = () => {
-    if (confirm('Создать новый проект? Текущий будет заменён.')) setProject(P.createProject());
+    if (confirm(t('confirm.newProject'))) setProject(P.createProject());
+  };
+
+  const onLanguage = (next) => {
+    if (setLanguage(next)) setLang(next);
   };
 
   return (
@@ -107,6 +115,8 @@ export default function App() {
         project={project}
         playing={playing}
         busy={busy}
+        lang={lang}
+        onLanguage={onLanguage}
         onPlay={togglePlay}
         onBpm={(bpm) => update((p) => P.setBpm(p, bpm))}
         onSteps={(steps) => update((p) => P.setSteps(p, steps))}
@@ -119,7 +129,7 @@ export default function App() {
       {message && (
         <div className="message" role="alert">
           <span>{message}</span>
-          <button onClick={() => setMessage(null)}>×</button>
+          <button onClick={() => setMessage(null)} title={t('common.close')}><Icon name="close" /></button>
         </div>
       )}
       <div className="workspace">
